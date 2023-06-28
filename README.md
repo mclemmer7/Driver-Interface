@@ -9,7 +9,7 @@ We used the "Fuel Data 2" database to store data for the fuel flow sensor and ha
 Display <br>
 Raspberry Pi 4 <br>
 Hall effect <br>
-Fuel Flow Sensor <br>
+Fuel flow sensor <br>
 Waterproof push button <br>
 Gear shifter sensor <br>
 Battery to power the system <br>
