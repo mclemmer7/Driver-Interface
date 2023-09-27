@@ -127,16 +127,22 @@ def update():
     speedometer.after(35,update)
 
 def speed():
-    mphArray = connector.execute("SELECT mph FROM speed")
-    connector.commit()
-    for i in mphArray:
-        countString = i
-        # Turn it into a string, then get the substring, which can be converted to an integer
-        holdCount = str(countString)
-        stop = holdCount.find(",")
-        mph = (holdCount[1:stop])
-        
-    speedometer.set_value(float(mph))
+    # Get the mph from the last row in the table even though there is only one row and column
+    # should change the table to have more and have an id at least
+    mph = connector.execute("select mph from speed order by mph desc limit 1")
+
+    # mphArray = connector.execute("SELECT mph FROM speed")
+    # connector.commit()
+    # for i in mphArray:
+    #     countString = i
+    #     # Turn it into a string, then get the substring, which can be converted to an integer
+    #     holdCount = str(countString)
+    #     stop = holdCount.find(",")
+    #     mph = (holdCount[1:stop])
+
+    # Do we still need to specify that it's a float?
+    # speedometer.set_value(float(mph))
+    speedometer.set_value(mph)
 
 # This function checks the gear shift sensor to figure out the current gear based on which input
 # pin is receiving 5V input
@@ -165,14 +171,17 @@ def gear():
 
 def fuel():
     global connector
-    percentageArray = connector.execute("SELECT percentage FROM fuelFlow")
-    connector.commit()
-    for i in percentageArray:
-        countString = i
-        # Turn it into a string, then get the substring, which can be converted to an integer
-        holdCount = str(countString)
-        stop = holdCount.find(",")
-        percentage = (holdCount[1:stop])
+    # Get the percentage of remaining fuel from the last row in the table
+    percentage = connector.commit("select percentage from fuelFlow order by id desc limit 1")
+
+    # percentageArray = connector.execute("SELECT percentage FROM fuelFlow")
+    # connector.commit()
+    # for i in percentageArray:
+    #     countString = i
+    #     # Turn it into a string, then get the substring, which can be converted to an integer
+    #     holdCount = str(countString)
+    #     stop = holdCount.find(",")
+    #     percentage = (holdCount[1:stop])
     
     fuelGauge.set_value(float(percentage) * 5.7)
 

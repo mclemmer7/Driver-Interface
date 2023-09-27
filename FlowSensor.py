@@ -15,12 +15,6 @@ GPIO.setup(BUTTON_SENSOR_GPIO, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 conn = sqlite3.connect('/home/pi/Documents/Baja 2023/Fuel Data 2')
 c = conn.cursor
 cursor = conn.cursor()
-#var = 10
-#conn.execute("DELETE FROM fuelFlow(numCount) WHERE ID 1")
-#conn.execute("INSERT INTO fuelFlow(numCount) VALUES (" + str(var) + ")")
-#conn.commit()
-#conn.close()
-
 
 # If the database has any values in it, pull the most recent value for fuelID and totalCount
 # Else, initialize totalCount, count, and fuelID to 0
@@ -45,42 +39,14 @@ def countPulse(channel):
 # Causes the countPulse() function to run when a pulse is sent into pin 13
 GPIO.add_event_detect(FLOW_SENSOR_GPIO, GPIO.FALLING, callback=countPulse)
 
-# We are grabbing the id array and rotations array from the database to convert it
-# to an integer
-idArray = conn.execute("SELECT id FROM fuelFlow")
-rotationsArray = conn.execute("SELECT rotations FROM fuelFlow")
+# SIMPLIFIED SOLUTION
+# Get the id for the last row in the table (newest element)
+fuelID = conn.execute("select id from fuelFlow order by id desc limit 1")
+# Get the number of rotations from the last row in the table
+totalCount = conn.execute("select rotations from fuelFlow order by id desc limit 1")
 conn.commit()
-newCount = 0;
-
-# Go through the array and we only want the value at index 1 since it is the most recent piece
-# of data in the database
-for i in rotationsArray:
-    if newCount == 1:
-        countString = i
-        # Turn it into a string, then get the substring, which can be converted to an integer
-        holdCount = str(countString)
-        stop = holdCount.find(",")
-        hold = int(holdCount[1:stop])
-        break;
-        
-    newCount += 1
-    
-totalCount = hold
+print(fuelID)
 print(totalCount)
-
-# Reset the count to 0
-newCount = 0
-# Go through idArray to get the current fuel ID
-for i in idArray:
-    if newCount == 1:
-        countString = i
-        holdCount = str(countString)
-        stop = holdCount.find(",")
-        hold = int(holdCount[1:stop])
-    newCount += 1
-
-fuelID = hold
-print (fuelID)
 
 while True:
     try:
@@ -119,7 +85,8 @@ while True:
         conn.execute("INSERT OR IGNORE INTO fuelFlow VALUES (?,?,?)", (fuelID, totalCount, percent))
         
         # Delete the old piece of data from the first row of the table
-        conn.execute("DELETE FROM fuelFlow WHERE id=" + str(fuelID - 2))
+        conn.execute("delete from fuelFlow limit 1")  # Better way to delete from the top row
+        #conn.execute("DELETE FROM fuelFlow WHERE id=" + str(fuelID - 2))
         conn.commit()
         
         # It takes the loop about 1 second for each iteration
